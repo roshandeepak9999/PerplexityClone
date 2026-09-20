@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in - Perplexed</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="auth-body">
+
+<div class="auth-card">
+  <div class="brand auth-brand"><span class="brand-dot"></span> Perplexed</div>
+  <h1 class="auth-title">Welcome back</h1>
+  <p class="auth-subtitle">Log in to continue searching</p>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" class="auth-form">
+    <label>Username</label>
+    <input type="text" name="username" placeholder="yourname" required autofocus>
+
+    <label>Password</label>
+    <input type="password" name="password" placeholder="••••••••" required>
+
+    <button type="submit" class="auth-btn">Log in</button>
+  </form>
+
+  <p class="auth-switch">
+    Don't have an account? <a href="{{ url_for('register') }}">Sign up</a>
+  </p>
+</div>
+
+</body>
+</html>

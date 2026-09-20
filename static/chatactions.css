@@ -1,0 +1,65 @@
+/* chat-actions.css - neutral colors so it works with light or dark themes */
+
+.ca-bar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin: 10px 0 4px;
+}
+
+.ca-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.55;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.ca-btn:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.2);
+}
+.ca-btn.active {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.28);
+}
+
+/* floating scroll-to-bottom button on the side of the chat */
+.ca-scroll {
+  position: fixed;
+  right: 24px;
+  bottom: 110px;
+  z-index: 50;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid rgba(128, 128, 128, 0.4);
+  border-radius: 50%;
+  background: rgba(40, 40, 40, 0.9);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+.ca-scroll.show {
+  display: inline-flex;
+}
+.ca-scroll:hover {
+  background: rgba(70, 70, 70, 0.95);
+}
+
+@media (max-width: 600px) {
+  .ca-scroll {
+    right: 14px;
+    bottom: 100px;
+  }
+}

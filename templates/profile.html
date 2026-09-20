@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings - Perplexed</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='profile.css', v=1) }}">
+</head>
+<body class="pf-page">
+{% set av = url_for('static', filename='uploads/avatars/' ~ user.photo) if user.photo else None %}
+
+<div class="pf-wrap">
+  <a class="pf-back" href="{{ url_for('index') }}">← Back to search</a>
+  <h1 class="pf-title">Settings</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="pf-flash pf-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- Photo -->
+  <section class="pf-card">
+    <h2>Profile photo</h2>
+    <p class="pf-sub">PNG, JPG, WEBP or GIF, up to 5 MB. It appears next to your name after you log in.</p>
+    <div class="pf-photo-row">
+      <div id="photoBox">
+        {% if av %}
+          <img class="pf-avatar pf-avatar-lg" src="{{ av }}" alt="Your photo">
+        {% else %}
+          <span class="pf-avatar pf-avatar-lg pf-initial">{{ user.initial }}</span>
+        {% endif %}
+      </div>
+      <div class="pf-photo-actions">
+        <form id="photoForm" method="post" action="{{ url_for('profile_photo') }}" enctype="multipart/form-data">
+          <input type="file" id="photoInput" name="photo" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
+          <button type="button" id="photoBtn" class="pf-btn">
+            <svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            {{ 'Change photo' if av else 'Upload photo' }}
+          </button>
+        </form>
+        {% if av %}
+        <form method="post" action="{{ url_for('profile_photo_remove') }}">
+          <button type="submit" class="pf-btn pf-btn-danger">Remove photo</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Personal details -->
+  <section class="pf-card">
+    <h2>Personal details</h2>
+    <p class="pf-sub">Update your name, username and email.</p>
+    <form method="post" action="{{ url_for('profile_details') }}">
+      <div class="pf-field">
+        <label for="full_name">Full name</label>
+        <input id="full_name" name="full_name" type="text" maxlength="120" value="{{ user.full_name or '' }}" placeholder="Your name">
+      </div>
+      <div class="pf-row2">
+        <div class="pf-field">
+          <label for="username">Username</label>
+          <input id="username" name="username" type="text" maxlength="80" required value="{{ user.username }}">
+        </div>
+        <div class="pf-field">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" maxlength="120" required value="{{ user.email }}">
+        </div>
+      </div>
+      <button type="submit" class="pf-btn">Save changes</button>
+    </form>
+  </section>
+
+  <!-- Password -->
+  <section class="pf-card">
+    <h2>Change password</h2>
+    <p class="pf-sub">Use at least 8 characters.</p>
+    <form method="post" action="{{ url_for('profile_password') }}" autocomplete="off">
+      <div class="pf-field">
+        <label for="current_password">Current password</label>
+        <input id="current_password" name="current_password" type="password" required autocomplete="current-password">
+      </div>
+      <div class="pf-row2">
+        <div class="pf-field">
+          <label for="new_password">New password</label>
+          <input id="new_password" name="new_password" type="password" minlength="8" required autocomplete="new-password">
+        </div>
+        <div class="pf-field">
+          <label for="confirm_password">Confirm new password</label>
+          <input id="confirm_password" name="confirm_password" type="password" minlength="8" required autocomplete="new-password">
+        </div>
+      </div>
+      <button type="submit" class="pf-btn">Update password</button>
+    </form>
+  </section>
+</div>
+
+<script>
+(function () {
+  const input = document.getElementById("photoInput");
+  const btn = document.getElementById("photoBtn");
+  const form = document.getElementById("photoForm");
+  const box = document.getElementById("photoBox");
+
+  btn.addEventListener("click", () => input.click());
+
+  input.addEventListener("change", () => {
+    const f = input.files[0];
+    if (!f) return;
+    if (!/^image\/(png|jpe?g|webp|gif)$/.test(f.type)) {
+      alert("Please choose a PNG, JPG, WEBP or GIF image.");
+      input.value = "";
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
+      alert("Photo must be under 5 MB.");
+      input.value = "";
+      return;
+    }
+    // instant preview, then upload
+    const img = document.createElement("img");
+    img.className = "pf-avatar pf-avatar-lg";
+    img.src = URL.createObjectURL(f);
+    box.replaceChildren(img);
+    form.submit();
+  });
+})();
+</script>
+</body>
+</html>

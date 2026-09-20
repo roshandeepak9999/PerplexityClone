@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perplexed - AI Search Engine</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='attachments.css', v=3) }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='chat-actions.css', v=4) }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='profile.css', v=1) }}">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+</head>
+<body>
+{% set av = url_for('static', filename='uploads/avatars/' ~ user.photo) if user.photo else None %}
+
+<div class="app-shell">
+
+  <!-- Sidebar: history -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <span class="brand"><span class="brand-dot"></span> Perplexed</span>
+      <button id="closeSidebarBtn" class="icon-btn sidebar-only">✕</button>
+    </div>
+    <button id="newChatBtn" class="new-chat-btn">+ New Search</button>
+    <div class="history-title">History</div>
+    <div id="historyList" class="history-list">
+      <div class="history-empty">No searches yet</div>
+    </div>
+    <div class="sidebar-footer">
+      <a href="{{ url_for('profile') }}" class="pf-chip" title="Your profile">
+        {% if av %}<img class="pf-avatar" src="{{ av }}" alt="">{% else %}<span class="pf-avatar pf-initial">{{ user.initial }}</span>{% endif %}
+        <span class="pf-name">{{ user.display_name }}</span>
+      </a>
+      <a href="{{ url_for('profile') }}" class="pf-side-link"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> <span>Settings</span></a>
+      <a href="{{ url_for('logout') }}" class="logout-link">Log out</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main-col">
+    <header class="topbar">
+      <button id="openSidebarBtn" class="icon-btn">☰</button>
+      <button id="historyBtn" class="history-btn">🕘 History</button>
+      <div class="topbar-spacer"></div>
+      <a href="{{ url_for('profile') }}" class="pf-settings-btn" title="Settings"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></a>
+      <a href="{{ url_for('profile') }}" class="pf-top" title="{{ user.display_name }} - your profile">{% if av %}<img class="pf-avatar" src="{{ av }}" alt="">{% else %}<span class="pf-avatar pf-initial">{{ user.initial }}</span>{% endif %}</a>
+    </header>
+
+    <main id="conversation" class="conversation"></main>
+
+    <div id="emptyState" class="empty-state">
+      <h1>Ask anything.</h1>
+      <p>Get answers backed by live web sources — in whatever format fits your question.</p>
+    </div>
+
+    <footer class="composer">
+      <form id="searchForm" autocomplete="off">
+        <!-- "required" removed so you can send a file/image without typing text -->
+        <input
+          id="queryInput"
+          type="text"
+          placeholder="Ask a question or attach a file..."
+          autocomplete="off"
+        />
+        <button type="submit" id="submitBtn">Search</button>
+      </form>
+    </footer>
+  </div>
+
+</div>
+
+<!-- attachments.js must load BEFORE script.js -->
+<script src="{{ url_for('static', filename='attachments.js', v=3) }}"></script>
+<script src="{{ url_for('static', filename='chat-actions.js', v=4) }}"></script>
+<script src="{{ url_for('static', filename='script.js', v=4) }}"></script>
+</body>
+</html>

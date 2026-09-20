@@ -1,0 +1,168 @@
+/* attachments.css - outline style, no filled color blocks; works in light or dark */
+
+/* upload button: outline pill with symbol + label.
+   !important + #searchForm selector so global button styles can't turn it
+   into a solid colored block. */
+.att-btn,
+#searchForm .att-btn {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  margin: 0 8px 0 0 !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(128, 128, 128, 0.6) !important;
+  border-radius: 18px !important;
+  background: transparent !important;
+  color: #9aa0a6 !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.att-btn:hover,
+#searchForm .att-btn:hover {
+  color: #ffffff !important;
+  border-color: rgba(200, 200, 200, 0.9) !important;
+  background: rgba(128, 128, 128, 0.15) !important;
+}
+.att-btn svg {
+  display: block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+}
+.att-label {
+  white-space: nowrap;
+}
+@media (max-width: 600px) {
+  .att-label {
+    display: none; /* symbol only on small screens */
+  }
+  .att-btn,
+  #searchForm .att-btn {
+    padding: 0 9px !important;
+  }
+}
+
+/* attached-file chips: outline only */
+.att-strip {
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 8px;
+}
+
+.att-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 260px;
+  padding: 8px 30px 8px 10px;
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  border-radius: 10px;
+  background: transparent;
+  font-size: 13px;
+}
+
+.att-chip img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex: 0 0 auto;
+}
+
+.att-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.att-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.att-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.att-meta {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.att-strip .att-remove {
+  background: transparent !important;
+  color: inherit !important;
+  border: none !important;
+  padding: 0 !important;
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 16px;
+  line-height: 20px;
+  opacity: 0.6;
+  cursor: pointer;
+}
+.att-remove:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.2);
+}
+
+.att-notice {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border: 1px solid rgba(220, 60, 60, 0.6);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+}
+
+/* drag & drop: light hint with an upload symbol, page stays visible */
+.att-drop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: rgba(128, 128, 128, 0.08);
+}
+.att-drop.show {
+  display: flex;
+}
+.att-drop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 40px;
+  border: 2px dashed rgba(128, 128, 128, 0.8);
+  border-radius: 16px;
+  background: rgba(30, 30, 30, 0.85);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+}

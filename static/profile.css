@@ -1,0 +1,255 @@
+/* profile.css - avatar, Settings button and profile page.
+   Neutral outline styling: works on light or dark themes. */
+
+/* ---------- avatar: photo, or outlined circle with the first letter ---------- */
+.pf-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+img.pf-avatar {
+  border: 1px solid rgba(128, 128, 128, 0.45);
+}
+.pf-initial {
+  border: 1.5px solid rgba(128, 128, 128, 0.75);
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 700;
+}
+.pf-avatar-lg {
+  width: 96px;
+  height: 96px;
+  font-size: 38px;
+}
+
+/* ---------- top bar: Settings button + your photo ---------- */
+.pf-settings-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(128, 128, 128, 0.6);
+  border-radius: 17px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+  white-space: nowrap;
+}
+.pf-settings-btn:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.15);
+}
+.pf-settings-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+}
+.pf-top {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 10px;
+  border-radius: 50%;
+  color: inherit;
+  text-decoration: none;
+}
+.pf-top:hover .pf-avatar {
+  border-color: rgba(220, 220, 220, 0.95);
+}
+@media (max-width: 600px) {
+  .pf-settings-btn span {
+    display: none; /* icon only on small screens */
+  }
+  .pf-settings-btn {
+    padding: 0 9px;
+  }
+}
+
+/* ---------- sidebar footer ---------- */
+.pf-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 6px;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+.pf-chip:hover {
+  background: rgba(128, 128, 128, 0.15);
+}
+.pf-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 600;
+}
+.pf-side-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 8px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 13px;
+  opacity: 0.8;
+}
+.pf-side-link:hover {
+  opacity: 1;
+  background: rgba(128, 128, 128, 0.15);
+}
+.pf-side-link svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+}
+
+/* ---------- profile / settings page ---------- */
+body.pf-page {
+  display: block !important;
+  height: auto !important;
+  min-height: 100vh;
+  overflow-y: auto !important;
+}
+.pf-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+.pf-back {
+  display: inline-block;
+  margin-bottom: 12px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 14px;
+  opacity: 0.75;
+}
+.pf-back:hover {
+  opacity: 1;
+}
+.pf-title {
+  margin: 0 0 18px;
+  font-size: 26px;
+}
+.pf-card {
+  margin-bottom: 18px;
+  padding: 20px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 14px;
+  background: rgba(128, 128, 128, 0.05);
+}
+.pf-card h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+.pf-sub {
+  margin: 0 0 16px;
+  font-size: 13px;
+  opacity: 0.65;
+}
+.pf-photo-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.pf-photo-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pf-row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 14px;
+}
+@media (max-width: 600px) {
+  .pf-row2 {
+    grid-template-columns: 1fr;
+  }
+}
+.pf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.pf-field label {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.pf-field input {
+  padding: 10px 12px;
+  border: 1px solid rgba(128, 128, 128, 0.5);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.pf-field input:focus {
+  outline: none;
+  border-color: rgba(210, 210, 210, 0.95);
+}
+.pf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid rgba(128, 128, 128, 0.6);
+  border-radius: 19px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pf-btn:hover {
+  background: rgba(128, 128, 128, 0.18);
+}
+.pf-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+}
+.pf-btn-danger:hover {
+  border-color: rgba(220, 60, 60, 0.85);
+  background: transparent;
+}
+.pf-flash {
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border: 1px solid;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.pf-success {
+  border-color: rgba(60, 180, 100, 0.75);
+}
+.pf-success::before {
+  content: "✓ ";
+}
+.pf-error {
+  border-color: rgba(220, 60, 60, 0.75);
+}
+.pf-error::before {
+  content: "⚠ ";
+}

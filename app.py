@@ -3,11 +3,17 @@ Perplexity Clone - Flask Backend
 ---------------------------------
 Modules:
   1. Auth module        - register / login / logout (Flask-Login + SQLite)
-  2. Search module       - DuckDuckGo web search (with retries)
-  3. LLM answer module    - Gemini, grounded in search results, with a
-                            general-knowledge fallback when search fails
-  4. History module       - every search a logged-in user makes is saved
-  5. Related questions module
+  2. Agent module        - plans which tool fits a plain-text question:
+                            search / calculate / direct (agent.py)
+  3. Search module       - DuckDuckGo web search (with retries)
+  4. RAG module          - page fetch, chunking, embeddings, similarity
+                            search over chunks (rag.py) - real classical RAG
+  5. LLM answer module    - Gemini, grounded in retrieved chunks / search
+                            results, with a general-knowledge fallback
+  6. Guardrail module    - a post-hoc pass checks whether the answer's
+                            claims are backed by the retrieved sources
+  7. History module       - every search a logged-in user makes is saved
+  8. Related questions module
 
 Author: <your name>
 Project: MCA Short-Term Internship - Generative AI Engineering
@@ -41,6 +47,8 @@ from google import genai
 from google.genai import types
 
 from models import db, User, SearchHistory
+from agent import plan_tool, try_calculate
+from rag import build_chunk_store, build_context_from_chunks
 
 # ---------------------------------------------------------------------------
 # Setup
@@ -290,9 +298,16 @@ def call_gemini(contents, retries=3):
     raise last_exc
 
 
-def generate_answer(query, results, history=None, attachments=None, code_mode=False):
-    """Answer using the search results when available; otherwise fall back to
-    the model's own knowledge (and say so)."""
+def generate_answer(query, results, history=None, attachments=None, code_mode=False,
+                     context_override=None):
+    """Answer using the search results (or a RAG context_override) when
+    available; otherwise fall back to the model's own knowledge (and say so).
+
+    context_override: a pre-built, numbered context string (e.g. from the
+    RAG chunk/embedding pipeline in rag.py) to use INSTEAD of raw snippet
+    context built from `results`. Citations [n] still refer to the same
+    source numbers either way.
+    """
     if not GEMINI_API_KEY:
         return (
             "⚠️ No GEMINI_API_KEY configured. Add one to your .env file "
@@ -329,8 +344,8 @@ Answer:"""
 {history_text}User request: {query}
 
 Answer:"""
-    elif results:
-        context = build_context(results)
+    elif results or context_override:
+        context = context_override if context_override else build_context(results)
         prompt = f"""You are an AI search assistant, similar to Perplexity AI.
 Answer the user's question primarily using the numbered search results below.
 Cite the source(s) you used inline with their number, e.g. [1], directly after
@@ -380,6 +395,72 @@ Answer:"""
                 "Please try again in a minute."
             )
         return f"Error generating answer: {exc}"
+
+
+def generate_direct_answer(query, history=None):
+    """For questions the agent decided don't need web retrieval at all -
+    a clean, confident answer with no 'no live sources found' framing,
+    since search was never attempted."""
+    if not GEMINI_API_KEY:
+        return (
+            "⚠️ No GEMINI_API_KEY configured. Add one to your .env file "
+            "(see README.md) to enable AI-generated answers."
+        )
+
+    history_text = ""
+    if history:
+        for h in history[-4:]:
+            history_text += f"Previous Q: {h['query']}\nPrevious A: {h['answer']}\n\n"
+
+    prompt = f"""You are a helpful AI assistant. Answer the question directly
+from your own knowledge - this question doesn't need a live web search.
+
+{FORMAT_GUIDE}
+
+{history_text}Question: {query}
+
+Answer:"""
+
+    try:
+        return call_gemini(prompt)
+    except Exception as exc:
+        if any(m in str(exc) for m in TRANSIENT_MARKERS):
+            return (
+                "Error generating answer: the AI service is busy right now. "
+                "Please try again in a minute."
+            )
+        return f"Error generating answer: {exc}"
+
+
+def verify_answer(answer, context):
+    """Hallucination guardrail: a SEPARATE model call that checks whether
+    the answer's claims are actually backed by the retrieved context.
+    Returns 'supported', 'unsupported', or None (skipped/unavailable)."""
+    if not GEMINI_API_KEY or not context or is_failed_answer(answer):
+        return None
+
+    prompt = f"""You are a strict fact-checker. Compare the ANSWER to the
+SOURCES below. Reply with EXACTLY ONE WORD:
+"SUPPORTED" if every factual claim in the ANSWER is backed by the SOURCES,
+or "UNSUPPORTED" if the ANSWER includes claims not found in the SOURCES.
+
+SOURCES:
+{context}
+
+ANSWER:
+{answer}
+
+Reply with one word only:"""
+
+    try:
+        verdict = call_gemini(prompt, retries=1).strip().upper()
+        if "UNSUPPORTED" in verdict:
+            return "unsupported"
+        if "SUPPORTED" in verdict:
+            return "supported"
+        return None
+    except Exception:
+        return None
 
 
 def generate_related_questions(query, answer):
@@ -517,10 +598,49 @@ def api_search():
 
     history = get_session_history()
 
-    # Coding requests and attachments don't need web search.
+    # Coding requests and attachments don't need web search - unchanged
+    # from before, and they SKIP the agent/RAG pipeline entirely.
     code_mode = is_code_request(query) and not attachments
-    results = [] if (attachments or code_mode) else web_search(query)
-    answer = generate_answer(query, results, history, attachments, code_mode)
+
+    results = []
+    tool_used = None
+    verified = None
+
+    if attachments:
+        tool_used = "attachment"
+        answer = generate_answer(query, results, history, attachments, code_mode)
+    elif code_mode:
+        tool_used = "code"
+        answer = generate_answer(query, results, history, attachments, code_mode)
+    else:
+        # ---- Agent: PLAN which tool fits this plain-text question ----
+        tool_used = plan_tool(call_gemini, query) if GEMINI_API_KEY else "search"
+
+        if tool_used == "calculate":
+            calc_result = try_calculate(query)
+            if calc_result is not None:
+                answer = f"**{calc_result}**"
+            else:
+                tool_used = "search"  # couldn't parse as math -> fall back
+
+        if tool_used == "direct":
+            answer = generate_direct_answer(query, history)
+
+        if tool_used == "search":
+            results = web_search(query)
+
+            # ---- RAG: chunk + embed + similarity search over results ----
+            chunks = build_chunk_store(client, query, results)
+            context_override = build_context_from_chunks(chunks) if chunks else None
+
+            answer = generate_answer(
+                query, results, history, context_override=context_override
+            )
+
+            # ---- Guardrail: verify the answer against retrieved context ----
+            check_context = context_override or (build_context(results) if results else None)
+            verified = verify_answer(answer, check_context)
+
     related = generate_related_questions(query, answer)
 
     saved_query = query
@@ -544,6 +664,8 @@ def api_search():
             "related_questions": related,
             "history_id": entry.id,
             "attachments": attachments["names"] if attachments else [],
+            "tool_used": tool_used,
+            "verified": verified,
         }
     )
 

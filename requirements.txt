@@ -1,6 +1,12 @@
-Flask==3.0.3
+Flask==3.1.3
 Flask-Login==0.6.3
 Flask-SQLAlchemy==3.1.1
-python-dotenv==1.0.1
-duckduckgo-search==6.2.13
-google-generativeai==0.8.3
+python-dotenv==1.2.3
+ddgs==9.16.0
+google-genai==2.24.0
+beautifulsoup4==4.15.0
+requests==2.34.2
+
+# Optional: only needed if users attach .docx files (app.py imports this
+# lazily and shows a friendly error if it's missing).
+python-docx==1.1.2
